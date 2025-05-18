@@ -15,6 +15,8 @@ let clientsChart;
 let queryTypePieChart;
 let forwardDestinationPieChart;
 let privacyLevel = 0;
+let timeLineChartType = "bar"
+let clientsChartType = "bar"
 
 // Register the ChartDeferred plugin to all charts:
 Chart.register(ChartDeferred);
@@ -22,6 +24,52 @@ Chart.defaults.set("plugins.deferred", {
   yOffset: "20%",
   delay: 300,
 });
+
+function toggleChartTypes() {
+  // Toggle time line chart type
+  timeLineChartType = timeLineChartType === "bar" ? "line" : "bar";
+  
+  // Toggle clients chart type
+  clientsChartType = clientsChartType === "bar" ? "line" : "bar";
+  
+  // Update chart displays
+  updateChartTypes();
+}
+
+function updateChartTypes() {
+  // Update queries over time chart
+  if (timeLineChart && timeLineChart.data && timeLineChart.data.datasets) {
+    timeLineChart.data.datasets.forEach(function(dataset) {
+      dataset.type = timeLineChartType;
+      
+      if (timeLineChartType === "line") {
+        dataset.fill = true;
+        dataset.tension = 0.4;
+      } else {
+        dataset.fill = undefined;
+        dataset.tension = 0;
+      }
+    });
+    timeLineChart.update();
+  }
+  
+  // Update clients chart
+  if (clientsChart && clientsChart.data && clientsChart.data.datasets) {
+    clientsChart.data.datasets.forEach(function(dataset) {
+      dataset.type = clientsChartType;
+      
+      if (clientsChartType === "line") {
+        dataset.fill = true;
+        dataset.tension = 0.4;
+      } else {
+        dataset.fill = undefined;
+        dataset.tension = 0;
+      }
+    });
+    clientsChart.update();
+  }
+}
+
 
 // Set the privacy level
 function initPrivacyLevel() {
@@ -77,6 +125,9 @@ function updateQueriesOverTime() {
         pointHoverRadius: 5,
         label,
         cubicInterpolationMode: "monotone",
+        type: timeLineChartType,
+        fill: timeLineChartType === "line",
+        tension: timeLineChartType === "line" ? 0.4 : 0
       });
     }
 
@@ -187,6 +238,9 @@ function updateClientsOverTime() {
         pointHoverRadius: 5,
         label: labels[i],
         cubicInterpolationMode: "monotone",
+        type: clientsChartType,
+        fill: clientsChartType === "line",
+        tension: clientsChartType === "line" ? 0.4 : 0
       });
     }
 
@@ -978,6 +1032,15 @@ $(() => {
 //destroy all chartjs customTooltips on window resize
 window.addEventListener("resize", () => {
   $(".chartjs-tooltip").remove();
+});
+
+//event listener for chart type toggle keystroke
+document.addEventListener("keydown", function(event) {
+  // Ctrl+T to toggle chart types
+  if (event.ctrlKey && event.key === "t") {
+    toggleChartTypes();
+    event.preventDefault();
+  }
 });
 
 // Tooltips
